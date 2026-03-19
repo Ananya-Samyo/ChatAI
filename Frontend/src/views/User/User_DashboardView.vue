@@ -62,7 +62,7 @@
                 class="bg-white text-blue-600 px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-blue-50 transition-all active:scale-95 flex items-center justify-center gap-2">
                 <span>➕</span> สร้าง AI ใหม่
               </button>
-              <button
+              <button @click="handleDailyCheckIn"
                 class="bg-blue-700/30 backdrop-blur-md border border-white/20 px-6 py-3 rounded-xl font-bold hover:bg-white/10 transition-all flex items-center justify-center">
                 🎁 โบนัสรายวัน
               </button>
@@ -94,7 +94,7 @@
           <div class="flex justify-between items-start mb-2">
             <span class="text-xl md:text-2xl">{{ stat.icon }}</span>
             <span class="text-[9px] md:text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-600">{{ stat.trend
-              }}</span>
+            }}</span>
           </div>
           <p class="text-[10px] md:text-xs font-semibold text-gray-400 uppercase tracking-tight">{{ stat.label }}</p>
           <h2 class="text-xl md:text-2xl font-black text-gray-800">{{ stat.value }}</h2>
@@ -177,6 +177,9 @@
           </section>
         </div>
       </div>
+
+      <DailyBonusModal ref="dailyBonusModalRef" :userProfile="userProfile" />
+      
     </main>
   </div>
 </template>
@@ -184,12 +187,16 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import Swal from 'sweetalert2' 
 import { db, auth } from '../../../firebase/config.js'
 import { signOut, onAuthStateChanged } from 'firebase/auth'
 import {
   doc, onSnapshot, collection, query, where,
   orderBy, limit, setDoc, serverTimestamp
 } from 'firebase/firestore'
+
+// --- 1. Import DailyBonusModal ---
+import DailyBonusModal from '../User/DailyBonusModal.vue'
 
 const router = useRouter()
 const userProfile = ref(null)
@@ -199,7 +206,10 @@ const activities = ref([])
 const loading = ref(true)
 const showDropdown = ref(false)
 
-// --- 1. Auth & Profile Sync ---
+// ตัวแปรสำหรับอ้างอิงถึง Component Modal
+const dailyBonusModalRef = ref(null)
+
+// --- 2. Auth & Profile Sync ---
 onMounted(() => {
   onAuthStateChanged(auth, async (user) => {
     if (user) {
@@ -209,13 +219,13 @@ onMounted(() => {
         if (snap.exists()) {
           userProfile.value = { id: snap.id, ...snap.data() }
         } else {
-          // สุ่มชื่อและรูปถ้าเป็นคนใหม่แกะกล่อง
           const newUser = {
             name: user.displayName || `Explorer_${Math.floor(Math.random() * 1000)}`,
             email: user.email,
             coins: 100,
             level: 1,
-            photoURL: user.photoURL || null, // ถ้าไม่มี photoURL จาก Google มันจะเป็น null
+            checkInCount: 0,
+            photoURL: user.photoURL || null,
             created_at: serverTimestamp()
           }
           await setDoc(userRef, newUser)
@@ -233,7 +243,15 @@ onMounted(() => {
   })
 })
 
-// --- 2. Logic Functions ---
+// --- 3. Logic Functions ---
+
+// ฟังก์ชันเรียกใช้ Modal จากไฟล์ DailyBonusModal.vue
+const handleDailyCheckIn = () => {
+  if (dailyBonusModalRef.value) {
+    dailyBonusModalRef.value.showModal()
+  }
+}
+
 const handleLogout = async () => {
   if (confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) {
     await signOut(auth)
@@ -277,7 +295,7 @@ const vClickOutside = {
   }
 }
 
-// --- 3. Computed Stats ---
+// --- 4. Computed Stats ---
 const stats = computed(() => [
   { label: 'AI Characters', value: myCharacters.value.length, icon: '🎭', trend: 'Owned' },
   { label: 'Coins', value: userProfile.value?.coins || 0, icon: '💰', trend: 'Wallet' },
