@@ -38,5 +38,6 @@ __screenshots__/
 # Vite
 *.timestamp-*-*.mjs
 
+serviceAccountKey.json
 Backend/.env
 node_modules/
