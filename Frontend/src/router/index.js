@@ -4,6 +4,8 @@ import { auth, db } from '../../firebase/config.js'
 import { onAuthStateChanged } from 'firebase/auth'
 import { doc, getDoc } from 'firebase/firestore'
 
+import UserProfileView from '@/views/User/User_Profile.vue'
+
 // ฟังก์ชันพิเศษสำหรับรอเช็คสถานะจาก Firebase ให้เสร็จก่อน
 const getCurrentUser = () => {
   return new Promise((resolve, reject) => {
@@ -25,6 +27,13 @@ const routes = [
     name: 'dashboard', 
     component: () => import('@/views/User/User_DashboardView.vue'),
     meta: { requiresAuth: true, role: 'user' } 
+  },
+  ,
+  { 
+    path: '/profile', 
+    name: 'profile', 
+    component: UserProfileView,
+    meta: { requiresAuth: true } 
   },
   { 
     path: '/create-character', 
