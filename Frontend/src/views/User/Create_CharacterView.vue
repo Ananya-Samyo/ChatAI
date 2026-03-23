@@ -87,7 +87,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import Swal from 'sweetalert2' // นำเข้า SweetAlert2
+import Swal from 'sweetalert2' 
 import { db, auth } from '../../../firebase/config.js'
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
 
@@ -158,7 +158,7 @@ const createCharacter = async () => {
       likes_count: 0,
       views_count: 0,
       relationship_base: 0,
-      creator_id: auth.currentUser?.uid || 'anonymous',
+      creator_id: auth.currentUser.uid,
       created_at: serverTimestamp()
     })
 

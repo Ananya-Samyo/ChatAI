@@ -22,30 +22,36 @@ const getCurrentUser = () => {
 
 const routes = [
   { path: '/', name: 'login', component: LoginView },
-  { 
-    path: '/dashboard', 
-    name: 'dashboard', 
+  {
+    path: '/dashboard',
+    name: 'dashboard',
     component: () => import('@/views/User/User_DashboardView.vue'),
-    meta: { requiresAuth: true, role: 'user' } 
+    meta: { requiresAuth: true, role: 'user' }
   },
   ,
-  { 
-    path: '/profile', 
-    name: 'profile', 
+  {
+    path: '/profile',
+    name: 'profile',
     component: UserProfileView,
-    meta: { requiresAuth: true } 
+    meta: { requiresAuth: true }
   },
-  { 
-    path: '/create-character', 
+  {
+    path: '/create-character',
     name: 'create-character',
     component: () => import('@/views/User/Create_CharacterView.vue'),
     meta: { requiresAuth: true }
   },
-  { 
-    path: '/admin', 
-    name: 'admin-dashboard', 
+  {
+    path: '/chat/:id',
+    name: 'Chat',
+    component: () => import('../views/User/ChatView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin',
+    name: 'admin-dashboard',
     component: () => import('@/views/Admin/Admin_DashboardView.vue'),
-    meta: { requiresAuth: true, role: 'admin' } 
+    meta: { requiresAuth: true, role: 'admin' }
   }
 ]
 
@@ -58,7 +64,7 @@ const router = createRouter({
 router.beforeEach(async (to, from) => {
   // 1. รอเช็คสถานะจาก Firebase Auth จริงๆ ไม่ใช้แค่ localStorage
   const firebaseUser = await getCurrentUser();
-  
+
   // 2. ถ้ามี User ใน Auth ให้ไปดึง Role จาก Firestore มาเช็คด้วย
   let userRole = null;
   if (firebaseUser) {
@@ -87,7 +93,7 @@ router.beforeEach(async (to, from) => {
     return userRole === 'admin' ? { name: 'admin-dashboard' } : { name: 'dashboard' };
   }
 
-  return true; 
+  return true;
 });
 
 export default router
