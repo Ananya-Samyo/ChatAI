@@ -58,6 +58,7 @@ import { ref, onMounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { db } from '../../../firebase/config.js'
 import { doc, getDoc, updateDoc, increment } from 'firebase/firestore'
+import { collection, query, orderBy, getDocs } from 'firebase/firestore'
 import axios from 'axios' 
 import Swal from 'sweetalert2'
 
@@ -72,18 +73,34 @@ const isLoading = ref(false)
 onMounted(async () => {
   const charId = route.params.id
   try {
-    const docSnap = await getDoc(doc(db, "characters", charId))
-    if (docSnap.exists()) {
-      character.value = docSnap.data()
+    const charSnap = await getDoc(doc(db, "characters", charId))
+    if (charSnap.exists()) {
+      character.value = charSnap.data()
       relationshipScore.value = character.value.relationship_base || 0
-      
+    }
+
+    // 🟢 ดึงประวัติแชท
+    const msgRef = collection(db, "chats", charId, "messages")
+    const q = query(msgRef, orderBy("created_at", "asc")) // ใช้ตามโครงสร้างจริง
+    const querySnapshot = await getDocs(q)
+    
+    if (!querySnapshot.empty) {
+      chatHistory.value = querySnapshot.docs.map(doc => ({
+        // ใช้ชื่อ role ให้ตรงกับที่ template ใช้เช็คสีลูกโป่ง (msg.role === 'user')
+        role: doc.data().sender, 
+        text: doc.data().text
+      }))
+    } else {
       chatHistory.value.push({ 
         role: 'ai', 
-        text: `สวัสดี! เราคือ ${character.value.name} (${character.value.short_description}) ยินดีที่ได้รู้จักนะ!` 
+        text: `สวัสดี! เราคือ ${character.value.name} ยินดีที่ได้รู้จักนะ!` 
       })
     }
+    
+    await scrollToBottom()
   } catch (error) {
-    console.error("Error fetching character:", error)
+    console.error("Load Chat Error:", error)
+    // ถ้าขึ้น Error ให้เช็คที่ Firebase Rules ว่าอนุญาตให้ดึงข้อมูลจาก chats หรือไม่
   }
 })
 
