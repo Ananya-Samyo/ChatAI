@@ -93,7 +93,7 @@ onMounted(async () => {
     } else {
       chatHistory.value.push({ 
         role: 'ai', 
-        text: `สวัสดี! เราคือ ${character.value.name} ยินดีที่ได้รู้จักนะ!` 
+        text: character.value.first_message 
       })
     }
     
