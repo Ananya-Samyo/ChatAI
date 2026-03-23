@@ -23,9 +23,9 @@ router.post('/', async (req, res) => {
         const characterName = charData.name;
         const characterDescription = charData.description;
 
-                // 1. (ดึงข้อมูลตัวละครมาแล้วใน charData)
-        const aiGender = charData.gender; 
-        const firstScene = charData.first_message; 
+        // 1. (ดึงข้อมูลตัวละครมาแล้วใน charData)
+        const aiGender = charData.gender;
+        const firstScene = charData.first_message;
 
         // 2. ดึงประวัติแชท 10 ข้อความล่าสุดเพื่อให้ AI จำบริบทได้
         const messagesRef = db.collection('chats').doc(characterId).collection('messages');
@@ -65,7 +65,11 @@ router.post('/', async (req, res) => {
        - 0-30%: สุภาพ เป็นกันเองเหมือนเพิ่งรู้จัก
        - 31-70%: สนิทกันมากขึ้น เริ่มหยอกล้อ หรือแสดงความเป็นห่วงเป็นใย
        - 71-100%+: คุยเหมือนคนสำคัญ มีความรัก ความอ้อน และความใส่ใจเป็นพิเศษ
-    5. อ้างอิง 'สถานการณ์ปัจจุบัน' เสมอหากบทสนทนายังไม่เปลี่ยนไปที่อื่น`
+    5. อ้างอิง 'สถานการณ์ปัจจุบัน' เสมอหากบทสนทนายังไม่เปลี่ยนไปที่อื่น
+    **กฎการจัดรูปแบบข้อความ (Formatting)**:
+    1. ส่วนที่เป็น "คำพูด" ให้เขียนตามปกติ
+    2. ส่วนที่เป็น "การกระทำ ความรู้สึก หรือบรรยากาศ" ให้ครอบด้วยเครื่องหมายดอกจัน เช่น *ยิ้มกว้างอย่างดีใจ* หรือ *เดินเข้ามาใกล้ๆ*
+    3. ห้ามใช้ตัวหนา (Markdown Bold) ในส่วนอื่นที่ไม่จำเป็น`
         });
 
         // 4. เริ่มแชทและส่งข้อความ
