@@ -29,6 +29,14 @@
           {{ msg.text }}
         </div>
       </div>
+
+      <div v-if="isLoading" class="flex justify-start">
+        <div class="bg-white p-3 rounded-2xl rounded-tl-none shadow-sm flex gap-1 items-center">
+          <div class="dot-bounce"></div>
+          <div class="dot-bounce delay-100"></div>
+          <div class="dot-bounce delay-200"></div>
+        </div>
+      </div>
     </div>
 
     <footer class="p-4 bg-white border-t border-slate-100">
@@ -69,7 +77,6 @@ onMounted(async () => {
       character.value = docSnap.data()
       relationshipScore.value = character.value.relationship_base || 0
       
-      // ทักทายครั้งแรก (ใช้ข้อมูลจากคำอธิบายสั้นๆ)
       chatHistory.value.push({ 
         role: 'ai', 
         text: `สวัสดี! เราคือ ${character.value.name} (${character.value.short_description}) ยินดีที่ได้รู้จักนะ!` 
@@ -87,9 +94,12 @@ const sendMessage = async () => {
   const text = userInput.value.trim()
   chatHistory.value.push({ role: 'user', text: text })
   userInput.value = ''
+  
+  // เริ่มแสดงจุดเด้ง (Loading)
   isLoading.value = true
+  await scrollToBottom()
 
-  // --- 💖 1. ระบบเช็ค Keyword เพื่อเพิ่มหัวใจ (Frontend Logic) ---
+  // --- 💖 1. ระบบเช็ค Keyword เพื่อเพิ่มหัวใจ ---
   const prefs = character.value.preferences
   let bonus = 0
   if (text.includes(prefs.food)) bonus += 5
@@ -116,7 +126,7 @@ const sendMessage = async () => {
     }
   }
 
-  // --- 🤖 2. เรียกใช้ Gemini AI ผ่าน Backend (Axios) ---
+  // --- 🤖 2. เรียกใช้ Gemini AI ผ่าน Backend ---
   try {
     const response = await axios.post('http://localhost:3000/api/chat', {
       message: text,
@@ -134,12 +144,12 @@ const sendMessage = async () => {
       text: "ขอโทษทีนะ เหมือนระบบเราจะขัดข้องนิดหน่อย ลองใหม่อีกครั้งนะ!" 
     })
   } finally {
+    // ปิดจุดเด้ง (Loading) เมื่อได้คำตอบแล้ว
     isLoading.value = false
     scrollToBottom() 
   }
 }
 
-// ฟังก์ชันช่วยเลื่อนหน้าจอลงล่างสุดเมื่อมีข้อความใหม่
 const scrollToBottom = async () => {
   await nextTick()
   const chatWindow = document.getElementById('chat-window')
@@ -148,3 +158,22 @@ const scrollToBottom = async () => {
   }
 }
 </script>
+
+<style scoped>
+/* สไตล์สำหรับจุดเด้ง (Typing Animation) */
+.dot-bounce {
+  width: 6px;
+  height: 6px;
+  background-color: #94a3b8; /* สี slate-400 */
+  border-radius: 50%;
+  animation: bounce 1.4s infinite ease-in-out;
+}
+
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-6px); }
+}
+</style>

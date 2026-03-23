@@ -10,8 +10,12 @@ const authRoutes = require('./auth');
 
 const app = express();
 
-// --- ตั้งค่า Gemini ---
+if (!process.env.GEMINI_API_KEY) {
+  console.error("❌ Error: ไม่พบ GEMINI_API_KEY ในไฟล์ .env");
+}
+
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const MODEL_NAME = "gemini-2.5-flash"; 
 
 app.use(express.json());
 app.use(cors({
@@ -20,7 +24,7 @@ app.use(cors({
 }));
 
 app.use(session({
-  secret: 'secret',
+  secret: 'my-secret-key',
   resave: false,
   saveUninitialized: true
 }));
@@ -30,55 +34,45 @@ app.use(passport.session());
 
 app.use('/api/auth', authRoutes);
 
-// --- 🤖 Route ใหม่สำหรับ Chat กับ AI ---
+// --- 💬 Route สำหรับ Chat ---
 app.post('/api/chat', async (req, res) => {
   try {
     const { message, characterId, relationshipLevel } = req.body;
 
-    // 1. ดึงข้อมูลตัวละคร
     const charDoc = await db.collection('characters').doc(characterId).get();
-    if (!charDoc.exists) {
-      return res.status(404).send("ไม่พบข้อมูลตัวละคร");
-    }
+    if (!charDoc.exists) return res.status(404).send("ไม่พบตัวละคร");
+    
     const charData = charDoc.data();
+    const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-
-    // 🎭 สร้าง Prompt (เหมือนเดิม)
+    // ใช้ความสามารถของ 2.5 ในการวิเคราะห์คาแรคเตอร์ที่ซับซ้อนขึ้น
     const prompt = `
-      คุณคือ: ${charData.name}
-      ลักษณะนิสัย: ${charData.description}
-      สิ่งที่คุณชอบกิน: ${charData.preferences?.food || 'ไม่ระบุ'}
-      กิจกรรมที่ชอบ: ${charData.preferences?.activity || 'ไม่ระบุ'}
-      ระดับความสนิทปัจจุบัน: ${relationshipLevel}% (0-100)
-      คำสั่ง: ตอบเป็นภาษาไทยตามคาแรคเตอร์ข้างต้น 
-      ข้อความจากผู้ใช้: "${message}"
+      บทบาท: คุณคือ ${charData.name}
+      นิสัย: ${charData.description}
+      ความชอบ: ${charData.preferences?.food || 'ทั่วไป'}
+      ระดับความสนิท: ${relationshipLevel}%
+      
+      กฎการตอบ:
+      - ตอบเป็นภาษาไทยตามนิสัยข้างต้น
+      - ห้ามตอบยาวเกินไป ให้เหมือนคุยแชทจริง
+      - ถ้าความสนิทสูง ให้ใช้คำแทนตัวที่ดูสนิทสนม
+      
+      ผู้ใช้พิมพ์มาว่า: "${message}"
     `;
 
     const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const aiText = response.text();
-
-    res.json({ text: aiText });
+    res.json({ text: result.response.text() });
 
   } catch (err) {
-    // ถ้ายังพังเพราะ 404 ให้ลองสลับไปใช้ "gemini-pro" ในบรรทัดที่แก้ข้างบน
     console.error("AI Error:", err);
-    res.status(500).json({ error: "Gemini AI รวนนิดหน่อย" });
+    res.status(500).json({ error: "Gemini 2.5 พักผ่อนชั่วคราว" });
   }
 });
 
-// --- 🧪 Route สำหรับเช็คว่า AI พร้อมทำงานไหม (ยิงผ่าน Browser ได้) ---
-app.get('/test-ai', async (req, res) => {
-  try {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-    const result = await model.generateContent("สวัสดี ทดสอบการเชื่อมต่อ");
-    const response = await result.response;
-    res.send("AI ตอบกลับมาว่า: " + response.text());
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("AI ยังไม่ทำงาน: " + err.message);
-  }
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`-----------------------------------`);
+  console.log(`Server running on port ${PORT} 🚀`);
+  console.log(`Model Active: ${MODEL_NAME}`);
+  console.log(`-----------------------------------`);
 });
-
-app.listen(3000, () => console.log('Server running on port 3000 🚀'));
