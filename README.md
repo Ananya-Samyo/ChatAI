@@ -122,9 +122,8 @@
 
 ### Infrastructure
 
-- Redis
 
-- Docker
+- Firebase
 
 
 
