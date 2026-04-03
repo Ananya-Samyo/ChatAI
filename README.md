@@ -139,6 +139,5 @@ https://github.com/Ananya-Samyo/ChatAI
 
 * ระบบบุคลิกของตัวละคร AI
 * ระบบบันทึกประวัติการสนทนา (Chat History)
-* ระบบล็อกอินผู้ใช้งาน
 * ระบบ Token / Credit สำหรับการใช้งาน AI
 * Marketplace สำหรับตัวละคร AI
