@@ -85,27 +85,14 @@ Firebase Database
 ⬇
 AI Response System
 
-<!-- สามารถเพิ่มรูป architecture diagram ได้ภายหลัง -->
-
-<!-- ตัวอย่าง: /screenshots/system-architecture.png -->
-
 ---
 
 # 📂 Screenshots
 
-<!-- ใส่รูปหน้าจอระบบในโฟลเดอร์ screenshots -->
-
-ตัวอย่างไฟล์รูปที่สามารถเพิ่มได้
-
-/screenshots/chat-ui.png
-/screenshots/create-character.png
-/screenshots/chat-example.png
-
-ตัวอย่างการแสดงรูป
-
-![Chat UI](screenshots/chat-ui.png)
-
-<!-- เพิ่มรูปอื่นได้ตามต้องการ -->
+<img width="1919" height="908" alt="Screenshot 2026-04-17 093917" src="https://github.com/user-attachments/assets/ff0c0cf8-fc78-4b5a-a442-15bf4c0119ce" />
+<img width="1917" height="750" alt="Screenshot 2026-04-17 103803" src="https://github.com/user-attachments/assets/09d881ca-d3c2-4cba-a165-d5744e7542fd" />
+<img width="1916" height="712" alt="Screenshot 2026-04-17 104007" src="https://github.com/user-attachments/assets/c1f5a637-9572-4e83-81d6-2ac2704502f4" />
+<img width="1916" height="896" alt="Screenshot 2026-04-17 104053" src="https://github.com/user-attachments/assets/0b0f9e77-9b5d-44d2-bf21-4594ab2a5f2b" />
 
 ---
 
